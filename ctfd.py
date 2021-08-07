@@ -37,7 +37,7 @@ class CTFdScrape(object):
      
   def __bypassCloudflareProtection(self):
     with Halo(text='Checking for DDOS Protection') as sp:
-      if self.ses.get(self.url, timeout=10).status_code == 503:
+      if self.ses.get(self.url, timeout=10, verify=False).status_code == 503:
         self.ses = create_scraper()
         sp.succeed('DDOS Protection Found')
 
@@ -80,18 +80,18 @@ class CTFdScrape(object):
 
   def __login(self):
     try:
-      resp  = self.ses.get(self.lg_url)
+      resp  = self.ses.get(self.lg_url,verify=False)
       soup  = BeautifulSoup(resp.text,'lxml')
       nonce = soup.find('input', {'name':'nonce'}).get('value')
       self.auth['nonce'] = nonce
       self.title = soup.title.string
-      resp  = self.ses.post(self.lg_url, data=self.auth)
+      resp  = self.ses.post(self.lg_url, data=self.auth, verify=False)
       return 'incorrect' not in resp.text
     except Exception as e:
       log.error('%s'%(e))
 
   def __manageVersion(self):
-    resp = self.ses.get(self.ch_url)
+    resp = self.ses.get(self.ch_url,verify=False)
     if '404' in resp.text:
       self.keys    = 'game'
       self.version = 'v.1.2.0'
@@ -107,7 +107,7 @@ class CTFdScrape(object):
     return url
 
   def __getHintById(self, id):
-    resp = self.ses.get('%s/%s' % (self.hi_url,id)).json()
+    resp = self.ses.get('%s/%s' % (self.hi_url,id),verify=False).json()
     return resp['data']['content']
 
   def __getHints(self, data):
@@ -128,12 +128,12 @@ class CTFdScrape(object):
       try:
         return self.solves[str(data['id'])]
       except:
-        self.solves = self.ses.get(self.sol_url).json()
+        self.solves = self.ses.get(self.sol_url,verify=False).json()
         return self.solves[str(data['id'])]
 
   def __getChallById(self, id):
     try:
-      resp = self.ses.get('%s/%s' % (self.ch_url,id)).json()
+      resp = self.ses.get('%s/%s' % (self.ch_url,id),verify=False).json()
       return self.__parseData(resp['data'])
     except Exception as e:
       log.error('%s'%(e)) 
@@ -203,7 +203,7 @@ class CTFdScrape(object):
     
       path = os.path.join(path, name)
       if not os.path.exists(path) or self.override:
-        response = self.ses.get(url, stream=True)
+        response = self.ses.get(url, verify=False ,stream=True)
         filesize = self.helper.get_content_len(response)
         self.helper.download(response, path)
         if os.path.exists(path):
@@ -297,7 +297,7 @@ class CTFdScrape(object):
   def getChallenges(self):
     with Halo(text='\n Collecting challs') as sp:
       try:
-        chals = self.ses.get(self.ch_url).json()[self.keys]
+        chals = self.ses.get(self.ch_url,verify=False).json()[self.keys]
         chals = sorted(chals, key=lambda _: _['category']) 
         for chal in chals:
           if not self.chals.get(chal['id']):
