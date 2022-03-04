@@ -1,6 +1,6 @@
 # CTFdScraper
 
-CTFdScraper is a simple scraper for automating challenges gathering from a [CTFd](https://github.com/CTFd/CTFd/) platform. Generally, it's utilizing the CTFd endpoint on `/api/v1/challenges`or `/chals`for older version.
+added verify=false for tls issue 
 
 ## Getting Started
 
